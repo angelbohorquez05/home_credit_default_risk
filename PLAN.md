@@ -60,13 +60,15 @@
 
 ## Fase 2. Preprocesamiento
 
-- [ ] `DAYS_EMPLOYED == 365243`: convertir a `NaN` y crear una flag `DAYS_EMPLOYED_ANOM`.
-- [ ] `"XNA"` y `"Unknown"`: convertir a `NaN`.
-- [ ] Eliminar `FLAG_MOBIL`.
-- [ ] Pasar los `DAYS_*` a valores positivos o a años (por ejemplo, edad = `-DAYS_BIRTH / 365`).
-- [ ] Codificar categóricas: probar Label Encoding o el tipo `category` de LightGBM, y Count Encoding para `ORGANIZATION_TYPE` y `OCCUPATION_TYPE`.
-- [ ] Faltantes: LightGBM los gestiona solo; solo imputar si se usa Regresión Logística.
-- [ ] Regla de oro: todo lo que se "aprende" (medias, conteos) se calcula en train y se aplica igual a test.
+- [x] `DAYS_EMPLOYED == 365243`: convertir a `NaN` y crear una flag `DAYS_EMPLOYED_ANOM`.
+- [x] `"XNA"` y `"Unknown"`: convertir a `NaN`.
+- [x] Eliminar `FLAG_MOBIL`.
+- [x] `OWN_CAR_AGE >= 64`: convertir a `NaN` y crear una flag `OWN_CAR_AGE_ANOM`.
+- [x] Probado quitar `FLAG_EMP_PHONE`: empeora (-0,0006), se mantiene.
+- [ ] (Pasa a Fase 3) Pasar los `DAYS_*` a valores positivos o a años (por ejemplo, edad = `-DAYS_BIRTH / 365`).
+- [x] Codificar categóricas con el tipo `category` de LightGBM. Pendiente en Fase 3: compararlo con Count Encoding para `ORGANIZATION_TYPE` y `OCCUPATION_TYPE`.
+- [x] Faltantes: LightGBM los gestiona solo; solo imputar si se usa Regresión Logística.
+- [x] Regla de oro: todo lo que se "aprende" (medias, conteos) se calcula en train y se aplica igual a test.
 
 ## Fase 3. Feature engineering (crear variables nuevas)
 
@@ -89,11 +91,12 @@
 
 > Analogía de la validación cruzada: en vez de un solo examen de prueba, hacer 5 simulacros distintos y promediar la nota. Es más fiable.
 
-- [ ] Validación: `StratifiedKFold(n_splits=5, shuffle=True, random_state=42)`.
-- [ ] Modelo principal: **LightGBM** con early stopping.
-- [ ] Guardar el AUC out-of-fold (OOF) como nota de referencia.
-- [ ] Predicción en test = media de los 5 modelos de los folds.
-- [ ] Revisar la importancia de variables (feature importance) para saber qué funciona.
+- [x] Validación: `StratifiedKFold(n_splits=5, shuffle=True, random_state=42)`.
+- [x] Modelo principal: **LightGBM** con early stopping.
+- [x] Guardar el AUC out-of-fold (OOF) como nota de referencia.
+- [x] Predicción en test = media de los 5 modelos de los folds.
+- [x] Revisar la importancia de variables (feature importance) para saber qué funciona.
+- [x] Hecho en `main.ipynb` (9 nov): **CV AUC 0,7499** (tutorial: 0,669). Submission: `output/submission_v1_lgbm_phase2.csv`.
 - [ ] Comparar con el AUC del Public Leaderboard: si el CV sube pero el LB no, sospechar sobreajuste.
 
 ## Fase 5. Mejora del modelo
@@ -117,26 +120,3 @@
 - [ ] Subir la última versión **antes del 19 de noviembre** para tener margen.
 - [ ] Limpiar el notebook, ejecutarlo de arriba a abajo y comprobar que se reproduce.
 - [ ] Generar el ZIP del notebook (requisito para Honors).
-
----
-
-## Calendario orientativo
-
-| Fechas | Fase |
-|---|---|
-| 4 nov | Fase 0 |
-| 5 a 7 nov | Fase 1 (EDA) |
-| 8 a 9 nov | Fase 2 (preprocesamiento) |
-| 10 a 12 nov | Fase 3 (features) y Fase 4 (LightGBM + CV) |
-| 13 a 16 nov | Fase 5 (tuning y otros modelos) |
-| 17 a 18 nov | Fase 6 (ensemble) |
-| 19 nov | Fase 7 (entrega final y ZIP) |
-
----
-
-## Registro de experimentos
-
-| # | Fecha | Cambio | Modelo | AUC CV | AUC Public LB | Notas |
-|---|---|---|---|---|---|---|
-| 0 | 4 nov | Tutorial (5 features) | Random Forest | | | baseline |
-| 1 | | | | | | |
