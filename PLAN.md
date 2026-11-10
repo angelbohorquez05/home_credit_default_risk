@@ -74,18 +74,27 @@
 
 > Analogía: un banquero no mira solo cuánto ganas o cuánto pides, sino la relación entre las dos cosas.
 
-- [ ] Ratios financieros:
+- [x] Ratios financieros:
   - `CREDIT_INCOME_RATIO = AMT_CREDIT / AMT_INCOME_TOTAL`
   - `ANNUITY_INCOME_RATIO = AMT_ANNUITY / AMT_INCOME_TOTAL`
   - `CREDIT_TERM = AMT_ANNUITY / AMT_CREDIT` (aprox. duración del préstamo)
   - `GOODS_CREDIT_RATIO = AMT_GOODS_PRICE / AMT_CREDIT`
   - `INCOME_PER_PERSON = AMT_INCOME_TOTAL / CNT_FAM_MEMBERS`
-- [ ] Ratios de tiempo:
+- [x] Ratios de tiempo:
   - `EMPLOYED_BIRTH_RATIO = DAYS_EMPLOYED / DAYS_BIRTH`
   - `AGE_YEARS`
-- [ ] Combinaciones de `EXT_SOURCE_1/2/3`: media, mínimo, máximo, desviación, producto, número de faltantes.
-- [ ] Número de faltantes por fila.
-- [ ] Añadir de una en una o en pequeños grupos y comprobar si el AUC de validación sube.
+- [x] Combinaciones de `EXT_SOURCE_1/2/3`: media, mínimo, máximo, desviación, producto, número de faltantes.
+- [x] Número de faltantes por fila.
+- [x] Añadir de una en una o en pequeños grupos y comprobar si el AUC de validación sube.
+- [x] Hecho en `main.ipynb` (9 nov). Resultado: **solo los ratios financieros (grupo B) mejoran: CV AUC 0,7577 (+0,0078)**.
+  - `CREDIT_TERM` (cuota / crédito ≈ 1 / número de cuotas) aporta casi el 90% de la mejora.
+  - Combinaciones de `EXT_SOURCE`, ratios de tiempo, `N_MISSING` y Count Encoding: dentro del ruido, no se usan.
+  - Submission: `output/submission_v2_lgbm_ratios.csv`.
+
+- [x] Segunda vuelta (9 nov), sección 9 de `main.ipynb`: **tipo de interés implícito** deducido de crédito y cuota para plazos estándar (12-60 meses) + señales de cuotas → **CV AUC 0,7652** (+0,0034 sobre el modelo ajustado). Submission: `output/submission_v4_lgbm_rates.csv` → LB **0,76912**, puesto 446.
+  - Sin mejora: comparar al cliente con la mediana de su grupo (sector, ocupación...) y tasa de impago de los 200 clientes más parecidos (KNN).
+
+- [x] Tercera vuelta (10 nov), sin mejora: interés calculado sobre el precio del bien, parte extra del crédito, edad al empezar a trabajar, edad al terminar el préstamo, total de consultas al buró (todas dentro del ruido).
 
 ## Fase 4. Modelo base sólido
 
@@ -97,20 +106,23 @@
 - [x] Predicción en test = media de los 5 modelos de los folds.
 - [x] Revisar la importancia de variables (feature importance) para saber qué funciona.
 - [x] Hecho en `main.ipynb` (9 nov): **CV AUC 0,7499** (tutorial: 0,669). Submission: `output/submission_v1_lgbm_phase2.csv`.
-- [ ] Comparar con el AUC del Public Leaderboard: si el CV sube pero el LB no, sospechar sobreajuste.
+- [x] Comparar con el AUC del Public Leaderboard: v2 dio **0,76405** en el LB (CV 0,7577), puesto 1849. CV y LB van en la misma dirección.
 
 ## Fase 5. Mejora del modelo
 
-- [ ] Ajustar hiperparámetros (`learning_rate`, `num_leaves`, `min_child_samples`, `subsample`, `colsample_bytree`, `reg_alpha`, `reg_lambda`) a mano o con Optuna.
+- [x] Ajustar hiperparámetros (`learning_rate`, `num_leaves`, `min_child_samples`, `subsample`, `colsample_bytree`, `reg_alpha`, `reg_lambda`) a mano o con Optuna.
 - [ ] Probar `scale_pos_weight` o `is_unbalance` por el desbalance (a veces no ayuda al AUC, comprobar).
-- [ ] Probar otros modelos: XGBoost, CatBoost, Regresión Logística.
+- [x] Probar otros modelos: **CatBoost** con las mismas variables → CV 0,7644 (LightGBM 0,7652). Correlación entre ambos: 0,965.
+- [x] Hecho en `main.ipynb` (9 nov): `num_leaves=15`, `colsample_bytree=0.2`, `learning_rate=0.02` → **CV AUC 0,7618** (+0,0041). Submission: `output/submission_v3_lgbm_tuned.csv` → LB **0,76557**, puesto 1040.
+  - Sin mejora: `cat_smooth`, más regularización L1/L2, `min_child_samples` 100-200, `num_leaves` 7 o 63.
 
 ## Fase 6. Ensemble
 
 > Analogía: preguntar a varios expertos y promediar su opinión suele equivocarse menos que uno solo.
 
-- [ ] Promediar LightGBM con varias semillas (seed averaging).
-- [ ] Mezclar modelos distintos (por ejemplo, LightGBM + CatBoost) con pesos elegidos según el AUC OOF.
+- [x] Promediar LightGBM con varias semillas (seed averaging): 3 semillas → LightGBM 0,7657, blend **0,7669**. Submission de prueba: `output/submission_v6_blend_lgbm3seeds_catboost.csv` (pendiente de pasar al notebook final).
+- [x] Mezclar modelos distintos (por ejemplo, LightGBM + CatBoost) con pesos elegidos según el AUC OOF.
+  - Hecho (10 nov), sección 10 de `main.ipynb`: media 50/50 → **CV AUC 0,7665**. Pesos entre 0,4 y 0,6 dan lo mismo, por eso 50/50. Submission: `output/submission_v5_blend_lgbm_catboost.csv` → LB **0,76957**, puesto 413.
 - [ ] Probar la media de rankings en vez de la media de probabilidades.
 
 ## Fase 7. Entrega final
